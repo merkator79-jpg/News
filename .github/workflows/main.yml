@@ -1,0 +1,32 @@
+name: collect-news
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-news
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Restore database
+        run: bash ci_restore.sh
+      - name: Collect news
+        run: python collect_news.py --sources sources.yaml --denylist denylist.txt --data-dir data
+      - name: Publish
+        run: bash ci_publish.sh
