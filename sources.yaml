@@ -1,0 +1,267 @@
+# sources.yaml: белый список источников новостного агрегатора
+# Проверено: 2026-10-13. Следующая проверка: не позднее 2027-01-13 (раз в квартал).
+#
+# Статусы: allowed | allowed_with_note | signal_only | pending
+# Принцип: всё, чего нет в этом файле, не используется (default: deny).
+# Источники со статусом pending в рейтинге не участвуют.
+#
+# Критерии допуска (должны выполняться все):
+#   1. Владелец установлен по открытым данным.
+#   2. Нет российского или белорусского участия (государственного и частного).
+#   3. Нет санкций РНБО и упоминаний в списках ЦПД/мониторингах как распространитель российской пропаганды.
+#   4. Хост каждой ссылки в ленте совпадает с доменом источника.
+#
+# Ограничение проверки: поиск по открытым источникам по названиям изданий.
+# Реестр санкций РНБО и списки ЦПД напрямую не сверялись. "Не найдено" не равно "нет".
+# Правила исключения см. denylist.txt.
+#
+# Решение по иностранным государственным СМИ (Al Jazeera, DW): допущены только для разделов
+# world и sport, не участвуют в рейтинге украинской политики.
+
+policy:
+  default: deny
+  denylist_file: denylist.txt
+  link_host_must_match_source_domain: true
+  russia_and_belarus_equal: true   # решение владельца проекта: Беларусь приравнена к России
+  telegram_as_source: false
+  recheck_interval_days: 90
+  odesa_tagging: "метить материалы городом по ключевым словам (Одеса, Одесса, Одещина, Одеська область) во всех допущенных источниках"
+
+sources:
+  - id: ukrinform
+    name: Укрінформ
+    domain: ukrinform.ua
+    feed_url: https://www.ukrinform.ua/rss/block-lastnews
+    feed_verified: 2026-10-13
+    scope: [ukraine, world, sport, economy, regions]
+    owner: "Держава Україна: державне інформагентство, сфера управління Мінкульту"
+    country: UA
+    status: allowed_with_note
+    note: "Державне агентство: відображає офіційну позицію влади. Це не ознака російського походження."
+    parser_notes:
+      - "Категорії містять змішані латиниця/кирилиця (напр. 'Діаcпора'), потрібна нормалізація."
+      - "Рубрика є в URL (rubric-sports, rubric-world, rubric-polytics, rubric-regions)."
+      - "Один елемент мав биту посилання (склеєний зовнішній хост) і старий guid: перевіряти хост."
+      - "Дедуплікація за нормалізованим URL, не за guid."
+
+  - id: ukrainska-pravda
+    name: Українська правда
+    domain: pravda.com.ua
+    feed_url: https://www.pravda.com.ua/rss/
+    feed_verified: 2026-10-13
+    scope: [ukraine, world, politics]
+    owner: "Dragon Capital (Т. Фіала) з 2020 р.; міноритарний акціонер Pluralis B.V. (фонд MDIF)"
+    country: UA
+    status: allowed
+    note: "Редакція заявляла про тиск з боку ОП. Фінансування: реклама, івенти, донори, читацька модель, YouTube."
+    parser_notes:
+      - "ttl=60 хв: стрічка може віддавати той самий знімок два цикли поспіль."
+      - "Категорії тільки 'Новини' і 'Публікації', тематики немає."
+      - "content:encoded містить повний текст: зберігати лише заголовок, посилання і короткий анонс."
+
+  - id: evropeyska-pravda
+    name: Європейська правда
+    domain: eurointegration.com.ua
+    feed_url: null          # знайти і перевірити
+    scope: [world, politics, ukraine]
+    owner: "ГО 'Європейська правда'; у медіагрупі УП з 2023 р.; фінансування: міжнародні донори"
+    country: UA
+    status: allowed
+
+  - id: ekonomichna-pravda
+    name: Економічна правда
+    domain: epravda.com.ua
+    feed_url: null          # знайти і перевірити
+    scope: [economy, ukraine]
+    owner: "Медіагрупа Української правди"
+    country: UA
+    status: allowed
+
+  - id: suspilne
+    name: Суспільне Мовлення (АТ НСТУ)
+    domain: suspilne.media
+    feed_url: https://suspilne.media/rss/all.rss
+    feed_verified: false    # мій інструмент відхилений robots.txt; перевірити зі свого сервера
+    scope: [ukraine, odesa, sport, world]
+    owner: "АТ 'Національна суспільна телерадіокомпанія України': публічний мовник за законом; акціонер: держава; наглядова рада"
+    country: UA
+    status: allowed
+    note: "Є регіональний розділ Суспільне Одеса, окремий фід шукати на сайті."
+
+  - id: dumskaya
+    name: Думська
+    domain: dumskaya.net
+    feed_url: https://dumskaya.net/rssnews
+    feed_verified: 2026-10-13
+    scope: [odesa]
+    owner: "Не встановлено формально. За повідомленням Zaxid.net, видання близьке до нардепа О. Гончаренка ('Європейська солідарність')"
+    country: UA
+    status: allowed_with_note
+    note: >
+      Російського сліду не знайдено. Українське видання, довгий час писало переважно російською.
+      У травні 2023 р. були обшуки в редакції в межах справи про рейдерське захоплення держмайна на Одещині;
+      СБУ заявила, що вони не стосуються журналістської діяльності. Політична близькість до українського політика: окреме питання, не ознака РФ-походження.
+    parser_notes:
+      - "Кодування windows-1251."
+      - "Дата з двозначним роком: 'Tue, 13 Oct 26 08:48:07 +0300'."
+      - "Мова: суміш російської та української, категорій немає."
+      - "Близько 7-8 матеріалів на добу."
+
+  - id: itc
+    name: ITC.ua
+    domain: itc.ua
+    feed_url: null          # знайти і перевірити
+    scope: [it, ai]
+    owner: "Creators Media Group (власники mc.today В. Черниш і Т. Ворона), раніше засновник С. Арабаджи. У січні 2026 р. оголошено об'єднання з The Page та SPEKA"
+    country: UA
+    status: allowed
+    note: "Сайт забороняє копіювання матеріалів: зберігати лише заголовок, посилання, короткий анонс."
+
+  - id: ain
+    name: AIN.UA
+    domain: ain.ua
+    feed_url: https://ain.ua/feed/
+    feed_verified: false    # robots.txt відхилив мій інструмент; перевірити зі свого сервера
+    scope: [it, ai]
+    owner: "Артем Старосєк (засновник OSINT-агенції Molfar) з 1 жовтня 2023 р.; раніше А. Оруджалієв"
+    country: UA
+    status: allowed
+
+  - id: dou
+    name: DOU.ua
+    domain: dou.ua
+    feed_url: https://dou.ua/feed/
+    feed_verified: 2026-10-13
+    scope: [it, ai]
+    owner: "Засновник Макс Іщенко (DOU/Djinni), Київ. Поточного власника не підтверджено."
+    country: UA
+    status: allowed_with_note
+    note: "Стрічка підбірка, не повний потік: в знімку 5 елементів, останнє оновлення 10 жовтня."
+    parser_notes:
+      - "Опис містить HTML, екранований як &lt;p&gt;."
+
+  - id: radiosvoboda-ua
+    name: Радіо Свобода (українська служба)
+    domain: radiosvoboda.org
+    feed_url: null          # знайти і перевірити
+    scope: [ukraine, world, politics]
+    owner: "Радіо Вільна Європа/Радіо Свобода (RFE/RL), штаб-квартира Прага; фінансування: Конгрес США через USAGM"
+    country: US/CZ
+    status: allowed_with_note
+    note: >
+      Не РФ/РБ; заблоковане в Росії. У 2025 р. фінансування було зупинене адміністрацією США,
+      далі відновлене за рішенням суду і частково підтримане ЄС: можливі зміни, перевіряти щоквартально.
+      Російська служба svoboda.org: окремий домен, не використовується.
+
+  - id: bbc
+    name: BBC World
+    domain: bbc.com
+    extra_domains: [bbc.co.uk, bbci.co.uk]
+    feed_url: https://feeds.bbci.co.uk/news/world/rss.xml
+    feed_verified: false    # мій інструмент заблокований; адреса зі сторонніх списків
+    scope: [world, sport]
+    owner: "BBC: суспільний мовник Великої Британії, ліцензійний збір, Королівська хартія"
+    country: GB
+    status: allowed
+    note: "Українська служба входить до BBC World Service; заблокована в Росії. Інші фіди: feeds.bbci.co.uk/ukrainian/rss.xml, feeds.bbci.co.uk/sport/rss.xml (не перевірені)."
+
+  - id: bbc-ukrainian
+    name: BBC News Україна
+    domain: bbc.com
+    extra_domains: [bbc.co.uk, bbci.co.uk]
+    feed_url: https://feeds.bbci.co.uk/ukrainian/rss.xml
+    feed_verified: 2026-10-13
+    scope: [ukraine, world]
+    owner: "BBC: суспільний мовник Великої Британії, ліцензійний збір; українська служба входить до BBC World Service"
+    country: GB
+    status: allowed
+    note: "Частина матеріалів в стрічці це посилання на youtube.com (відео): програма покаже це як зауваження, при зборі новин їх треба відкидати."
+
+  - id: guardian
+    name: The Guardian
+    domain: theguardian.com
+    feed_url: https://www.theguardian.com/world/rss
+    feed_verified: false    # мій інструмент заблокований
+    scope: [world, politics]
+    owner: "Guardian Media Group, 100% належить Scott Trust Limited (без комерційного власника)"
+    country: GB
+    status: allowed
+
+  - id: dw
+    name: Deutsche Welle
+    domain: dw.com
+    feed_url: http://rss.dw.com/rdf/rss-en-all
+    feed_verified: false    # мій інструмент заблокований; адреса зі сторонніх списків
+    scope: [world, sport]
+    owner: "Федеральний уряд Німеччини (фінансування з бюджету); закон про DW забороняє уряду давати редакційні вказівки"
+    country: DE
+    status: allowed_with_note
+    note: "Державне іноземне ЗМІ: тільки розділи world і sport, не для рейтингу української політики."
+
+  - id: aljazeera
+    name: Al Jazeera
+    domain: aljazeera.com
+    feed_url: https://www.aljazeera.com/xml/rss/all.xml
+    feed_verified: 2026-10-13
+    scope: [world, sport]
+    owner: "Al Jazeera Media Network (Катар); бюджет в основному з державних коштів Катару"
+    country: QA
+    status: allowed_with_note
+    note: "Не РФ/РБ. Державне іноземне ЗМІ: тільки розділи world і sport, низька вага, не для рейтингу української політики (рішення прийняте за дорученням власника проекту)."
+    parser_notes:
+      - "Час в UTC (+0000)."
+      - "У посиланнях ?traffic_source=rss: прибирати перед дедуплікацією."
+      - "guid нестабільний (?t=timestamp): дедуплікувати за URL."
+      - "Відфільтрувати відео/галереї за шляхом URL (/video/, /gallery/); категорія 'Show Types' шумова."
+
+  - id: mit-news-ai
+    name: "MIT News: Artificial intelligence"
+    domain: news.mit.edu
+    feed_url: https://news.mit.edu/rss/topic/artificial-intelligence2
+    feed_verified: 2026-10-13
+    scope: [ai]
+    owner: "Massachusetts Institute of Technology (США)"
+    country: US
+    status: allowed_with_note
+    note: "Прес-служба університету: матеріали про власні дослідження, не незалежна журналістика."
+    parser_notes:
+      - "Дата RFC822 із зсувом -0400."
+      - "Є теги 'category' з атрибутом domain."
+      - "content:encoded містить повний HTML: зберігати лише заголовок, посилання, короткий анонс."
+
+  - id: hacker-news
+    name: Hacker News
+    domain: news.ycombinator.com
+    api_url: https://hacker-news.firebaseio.com/v0/topstories.json
+    api_verified: 2026-10-13
+    scope: [it, ai]
+    owner: "Y Combinator (США)"
+    country: US
+    status: signal_only
+    note: >
+      Використовувати лише як сигнал (score, коментарі). Посилання на HN: це чужі домени:
+      застосовувати denylist до кожного посилання.
+
+# Кандидати: до завершення перевірки в рейтингу не використовуються
+pending:
+  - id: unian
+    name: УНІАН
+    note: >
+      Власник не встановлений. Автор Радіо Свобода (близько 2018 р.) описував у стрічці матеріали на замовлення
+      про УПЦ МП та РПЦ і писав, що в агентство прийшли люди Ахметова і Коломойського. Російського власника
+      не знайдено. Адреса фіду: за моїм URL 404.
+  - id: suspilne-odesa
+    name: Суспільне Одеса
+    note: "Знайти окремий фід (перевірити зі свого сервера); матеріали і так входять до Суспільне."
+  - id: reporter-odesa
+    name: Репортер (Одеса)
+    note: "Власник і фід не встановлені."
+  - id: 048
+    name: 048.ua
+    note: "Власник і фід не встановлені."
+  - id: odesa-media
+    name: Одеса-медіа
+    note: "Власник і фід не встановлені."
+  - id: trassa-e95
+    name: Трасса Е95
+    note: "Власник і фід не встановлені."

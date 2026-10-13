@@ -1,0 +1,3 @@
+У репозиторій GitHub завантажте: collect_news.py, sources.yaml, denylist.txt, папку scripts.
+Файл news.yml створіть у репозиторії як .github/workflows/news.yml (вміст скопіюйте з цього news.yml).
+Потім: Actions -> Run workflow, і Settings -> Pages -> гілка pages.
