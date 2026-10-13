@@ -568,7 +568,6 @@ button{font:inherit;color:inherit}
 .themes button[data-t=cappuccino]{background:linear-gradient(135deg,#eadccb 50%,#8a5535 50%)}
 
 /* ---- каркас ---- */
-.fbtn{display:none}
 .layout{flex:1;min-height:0;display:grid;grid-template-columns:262px minmax(0,1fr);gap:24px;padding:0 16px}
 .side{overflow-y:auto;padding:16px 6px 18px 0}
 .side::-webkit-scrollbar,main::-webkit-scrollbar{width:7px}
@@ -650,10 +649,7 @@ a.chip:hover{background:var(--sea);color:var(--onsea)}
 @media (max-width:900px){
   html,body{height:auto;overflow:auto}.app{height:auto}
   .top{flex-wrap:wrap;gap:12px}.brand{width:auto}
-  .layout{display:block;padding:0 12px}
-  .fbtn{display:block;width:100%;margin:12px 0 4px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-weight:600}
-  .side{display:none}.side.open{display:block}
-  .clock{width:auto}.top{padding:10px 12px}.clock .time{font-size:40px}.side,main{overflow:visible;padding-right:0}
+  .layout{display:block;padding:0 12px}.side,main{overflow:visible;padding-right:0}
   .wx{flex-basis:100%}.wx-days{overflow-x:auto}
 }
 </style>
@@ -671,8 +667,7 @@ a.chip:hover{background:var(--sea);color:var(--onsea)}
  </div>
 </header>
 <div class="layout">
-<button class="fbtn" id="fbtn" aria-expanded="false">Фільтри та налаштування ▾</button>
-<aside class="side" id="side">
+<aside class="side">
  <div class="ctl-off" id="ctl-off" hidden>Автооновлення та кнопка «Оновити зараз» доступні, коли сторінку відкрито програмою. Запустіть її ярликом «Новини» на робочому столі або відкрийте <a href="http://127.0.0.1:8787/">127.0.0.1:8787</a>.</div>
  <div class="ctl" id="ctl" hidden>
   <h2>Автооновлення</h2>
@@ -681,7 +676,6 @@ a.chip:hover{background:var(--sea);color:var(--onsea)}
   <span class="st" id="st"></span>
   <button class="off" id="quit" title="Зупинити програму">Вимкнути програму</button>
  </div>
- <div class="grp notranslate" translate="no"><h2>Тема</h2><div class="seg" id="g-theme"><button data-t="dark">Темна</button><button data-t="light">Світла</button><button data-t="cappuccino">Капучіно</button></div></div>
  <div class="grp"><h2>Сортування</h2><div class="seg" id="g-sort"></div></div>
  <div class="grp"><h2>Період</h2><div class="seg" id="g-period"></div><p class="note" id="hist" hidden></p></div>
  <div class="grp"><h2>Регіон</h2><div class="menu" id="g-geo"></div></div>
@@ -720,15 +714,10 @@ try {
 function setTheme(t, store) {
   document.documentElement.setAttribute("data-theme", t);
   if (store) { try { localStorage.setItem("news-theme", t); } catch (e) {} }
-  document.querySelectorAll("#themes button, #g-theme button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === t ? "true" : "false"));
+  document.querySelectorAll("#themes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === t ? "true" : "false"));
 }
-document.querySelectorAll("#themes button, #g-theme button").forEach(b => { b.onclick = () => setTheme(b.dataset.t, true); });
+document.querySelectorAll("#themes button").forEach(b => { b.onclick = () => setTheme(b.dataset.t, true); });
 setTheme(document.documentElement.getAttribute("data-theme"), false);
-
-document.getElementById("fbtn").onclick = () => {
-  const o = document.getElementById("side").classList.toggle("open");
-  document.getElementById("fbtn").setAttribute("aria-expanded", o ? "true" : "false");
-};
 
 function save() {
   try {
@@ -984,17 +973,7 @@ loadWeather(); setInterval(loadWeather, 30 * 60 * 1000);
 const INTERVALS = [[15,"15 хв"],[30,"30 хв"],[60,"1 год"],[180,"3 год"],[0,"Вимк."]];
 const ctl = document.getElementById("ctl");
 if (!location.protocol.startsWith("http")) document.getElementById("ctl-off").hidden = false;
-async function hasApp() {
-  try { const r = await fetch("/status", {cache: "no-store"}); const j = await r.json(); return "interval" in j; }
-  catch (e) { return false; }
-}
-function staticMode() {
-  const o = document.getElementById("ctl-off");
-  o.textContent = "Новини оновлюються автоматично приблизно раз на пів години. Сторінка перезавантажується сама.";
-  o.hidden = false;
-  setTimeout(() => location.reload(), 900000);
-}
-function startPanel() {
+if (location.protocol.startsWith("http")) {
   ctl.hidden = false;
   const gi = document.getElementById("g-int");
   const stEl = document.getElementById("st");
@@ -1039,9 +1018,9 @@ function startPanel() {
     stEl.textContent = "Програму вимкнено, вкладку можна закрити.";
   };
   poll();
+} else {
+  setTimeout(() => location.reload(), 900000);
 }
-if (location.protocol.startsWith("http")) hasApp().then(ok => ok ? startPanel() : staticMode());
-else setTimeout(() => location.reload(), 900000);
 </script>
 </body>
 </html>
